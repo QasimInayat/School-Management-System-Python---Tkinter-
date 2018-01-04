@@ -1,0 +1,146 @@
+from tkinter import  *
+import sqlite3
+import tkinter.ttk as ttk
+from  PIL import *
+
+class show_records(Tk):
+    def __init__(self, *win4, **win4master):
+        Tk.__init__(self, *win4, **win4master)
+        self.geometry("800x600+350+50")
+
+        self.bg ="black"
+        self.config(bg=self.bg)
+        self.Left = Frame(self, width=300, height=500, bd=8, relief="raise")
+        self.Left.pack(side=LEFT)
+        self.btn_show = Button(self.Left,text="SHOW RECORD")
+        self.btn_show.pack(side=TOP)
+        self.btn_back = Button(self.Left, text="BACK")
+        self.btn_back.pack(side=RIGHT)
+        self.Right = Frame(self, width=600, height=500, bd=8, relief="raise")
+        self.Right.pack(side=TOP)
+        # ==================================LIST WIDGET========================================
+        # ==================================LIST WIDGET========================================
+        global tree
+        scrollbary = Scrollbar(self.Right, orient=VERTICAL)
+        scrollbarx = Scrollbar(self.Right, orient=HORIZONTAL)
+        tree = ttk.Treeview(self.Right, columns=("id", "accession", "entrydate", "title", "publisher", "editor","sub-title","price","vendor"),
+                selectmode="extended", height=500, yscrollcommand=scrollbary.set,
+                xscrollcommand=scrollbarx.set)
+        scrollbary.config(command=tree.yview)
+        scrollbary.pack(side=RIGHT, fill=Y)
+        scrollbarx.config(command=tree.xview)
+        scrollbarx.pack(side=BOTTOM, fill=X)
+        tree.heading('id', text="ID", anchor=W)
+        tree.heading('accession', text="Accession.NO", anchor=W)
+        tree.heading('entrydate', text="entrydate", anchor=W)
+        tree.heading('title', text="title", anchor=W)
+        tree.heading('publisher', text="publisher", anchor=W)
+        tree.heading('editor', text="editor", anchor=W)
+        tree.heading('sub-title', text="sub-title", anchor=W)
+        tree.heading('price', text="price", anchor=W)
+        tree.heading('vendor', text="vendor", anchor=W)
+        tree.column('#0', stretch=NO, minwidth=0, width=0)
+        tree.column('#1', stretch=NO, minwidth=0, width=80)
+        tree.column('#2', stretch=NO, minwidth=0, width=120)
+        tree.column('#3', stretch=NO, minwidth=0, width=80)
+        tree.column('#4', stretch=NO, minwidth=0, width=150)
+        tree.column('#5', stretch=NO, minwidth=0, width=120)
+        tree.column('#6', stretch=NO, minwidth=0, width=120)
+        tree.column('#7', stretch=NO, minwidth=0, width=120)
+        tree.column('#8', stretch=NO, minwidth=0, width=120)
+        tree.pack()
+
+def goto_show_records ():
+    GotoShowRecords = show_records()
+
+
+win = Tk()
+button = Button(win, text='Show', command = goto_show_records).pack()
+win.mainloop()
+
+
+
+
+
+def select_data(a):
+
+    tst_data = tree.item(tree.selection())
+    print("THE VALUES",type(tst_data),tst_data)
+    item = tree.selection()[0]
+    print(item)
+    global update_tree_id
+
+
+    update_tree_id = tree.item(item)['values'][0]
+    print(update_tree_id)
+    ACCESSION_UP.set(tree.item(item)['values'][1])
+    ENTRYDATE_UP.set(tree.item(item)['values'][2])
+    TITLE_UP.set(tree.item(item)['values'][3])
+    PUBLISHER_UP.set(tree.item(item)['values'][4])
+    EDITOR_UP.set(tree.item(item)['values'][5])
+    SUBTITLE_UP.set(tree.item(item)['values'][6])
+    PRICE_UP.set(tree.item(item)['values'][7])
+    VENDOR_UP.set(tree.item(item)['values'][8])
+
+
+
+def update_Data():
+
+    accessionno = ACCESSION_UP.get()
+    entrydate =ENTRYDATE_UP.get()
+    title = TITLE_UP.get()
+    publisher =PUBLISHER_UP.get()
+    editor =EDITOR_UP.get()
+    subtitle=SUBTITLE_UP.get()
+    price = PRICE_UP.get()
+    vendor = VENDOR_UP.get()
+    try:
+        Database()
+        upd_query = (" UPDATE 'book' SET accession = ?, entrydate = ?, title = ?, publisher = ?, editor = ?, subtitle = ?,price =?,vendor =? WHERE book_id = ? ")
+        result_update = cursor.execute(upd_query,[(accessionno),(entrydate),(title),(publisher),(editor),(subtitle),(price),(vendor),(update_tree_id)])
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("UPDATED")
+    except sqlite3.OperationalError:
+        print("SOMETHING WRONG WITH UPDATING")
+def update_show():
+    tree.delete(*tree.get_children())
+    Database()
+    cursor.execute("SELECT * FROM `book` ORDER BY `book_id` ASC")
+    fetch = cursor.fetchall()
+    global data
+    for data in fetch:
+        tree.insert('', 'end', values=(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8]))
+    cursor.close()
+    conn.close()
+
+
+    def delete_data():
+    Database()
+    deletes =  ("DELETE FROM 'book' WHERE book_id = ?")
+    cursor.execute(deletes,[(update_tree_id)])
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("deleted")
+
+def select_data(a):
+
+    tst_data = tree.item(tree.selection())
+    print("THE VALUES",type(tst_data),tst_data)
+    item = tree.selection()[0]
+    print(item)
+
+
+
+    update_tree_id = tree.item(item)['values'][0]
+    print(update_tree_id)
+    ACCESSION_UP.set(tree.item(item)['values'][1])
+    ENTRYDATE_UP.set(tree.item(item)['values'][2])
+    TITLE_UP.set(tree.item(item)['values'][3])
+    PUBLISHER_UP.set(tree.item(item)['values'][4])
+    EDITOR_UP.set(tree.item(item)['values'][5])
+    SUBTITLE_UP.set(tree.item(item)['values'][6])
+    PRICE_UP.set(tree.item(item)['values'][7])
+    VENDOR_UP.set(tree.item(item)['values'][8])
